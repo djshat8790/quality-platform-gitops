@@ -26,3 +26,13 @@ env:
   DB_URL: jdbc:postgresql://postgres:5432/payments
   DB_USERNAME: dheeraj
   DB_PASSWORD: password
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1

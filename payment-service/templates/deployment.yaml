@@ -27,6 +27,27 @@ spec:
           ports:
             - containerPort: {{ .Values.service.port }}
 
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            failureThreshold: 30
+            periodSeconds: 5
+
           env:
             - name: DB_URL
               value: {{ .Values.env.DB_URL | quote }}
