@@ -1,0 +1,95 @@
+---
+# Source: payment-service/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-payment-service
+  labels:
+    helm.sh/chart: payment-service-0.1.0
+    app.kubernetes.io/name: payment-service
+    app.kubernetes.io/instance: payment
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8082
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: payment-service
+    app.kubernetes.io/instance: payment
+
+---
+# Source: payment-service/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: payment-payment-service
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: payment-service
+
+  template:
+    metadata:
+      labels:
+        app: payment-service
+
+    spec:
+      containers:
+        - name: payment-service
+
+          image: "ghcr.io/djshat8790/payment-service:latest"
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8082
+
+          env:
+            - name: DB_URL
+              value: "jdbc:postgresql://postgres:5432/payments"
+
+            - name: DB_USERNAME
+              value: "dheeraj"
+
+            - name: DB_PASSWORD
+              value: "password"
+
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+---
+# Source: payment-service/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: payment-payment-service
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - host: payment.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+
+            backend:
+              service:
+                name: payment-payment-service
+
+                port:
+                  number: 8082
